@@ -1,7 +1,5 @@
 const  endpoints  = require("./endpoints.json");
-const { selectTopics } = require("../be-nc-news/model");
-const { selectArticleById} = require("../be-nc-news/model");
-const { selectArticles } = require("../be-nc-news/model");
+const { selectTopics, selectArticleById, selectArticles, selectCommentByArticleId} = require("../be-nc-news/model");
 
 exports.getEndPoints = (req, res, next) => {
   //  console.log(endpoints);
@@ -37,3 +35,13 @@ exports.getArticles = (req, res, next) => {
     })
     .catch(next)
 };
+
+exports.getCommentForGivenArticle = (req, res, next) => {
+    const { article_id } = req.params
+  
+    selectCommentByArticleId(article_id)
+    .then((comments)=>{
+        res.status(200).send({ comments });
+    })
+    .catch(next)
+}
