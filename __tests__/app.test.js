@@ -141,4 +141,53 @@ describe("app", () => {
         });
     });
   });
+
+  describe("GET /api/articles/:article_id/comments", () => {
+    test("Should respond with an array of comments for a given article_id ", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body: { comments} }) => {
+          console.log(comments);
+          
+          expect(comments).toBeInstanceOf(Array)
+          expect(comments.length).toBeGreaterThan(0)
+          comments.forEach((comment) => {
+            expect(comment).toMatchObject({
+              comment_id: expect.any(Number),
+              body: expect.any(String),
+              votes: expect.any(Number),
+              author: expect.any(String),
+              article_id: 1,
+              created_at: expect.any(String),
+            });
+          });
+        });
+    });
+    test("Should return status 200 when the comments are sorted by date in descending order", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).toBeSortedBy('created_at', { descending: true })
+        });
+    });
+  });
+     test("404: responds with error for non-existent article_id", () => {
+        return request(app)
+          .get("/api/articles/828/comments")
+          .expect(404)
+          .then(({ body: { msg } }) => {
+           expect(msg).toBe("Article Not Found")
+      });
+  });
+
+     test("Should respond with the status 400 when the request is not valid", () => {
+      return request(app)
+      .get("/api/articles/nohrwjd/comments")
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe("Bad Request")
+      });
+  });
 });
