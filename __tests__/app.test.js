@@ -340,3 +340,49 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
 });
+
+    
+
+  ////// 9_DELETE /api/comments/:comment_id
+  describe("DELETE /api/comments/:comment_id", () => {
+    test("Should delete the given comment by comment_id and returns no content, with a status of 204", () => {
+      return request(app)
+      .delete("/api/comments/1")
+      .send()
+      .expect(204)
+      .then(({ body }) => {
+        console.log(body);
+        
+        expect(body).toEqual({})
+        return request(app)
+          .get("/api/articles/5/comments")
+          .expect(200)
+      })
+        .then(({ body }) => {
+          const deletedComm = body.comments.forEach((comment)=>{
+            comment.comment_id === 1
+          })
+          expect(deletedComm).toBe() //or toBeUndefined()
+      })
+    });
+
+    test("Should respond with an error when the comment_id is not valid, with the status 400", () => {
+      return request(app)
+        .delete("/api/comments/not-valid")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request")
+        })
+    });
+
+    test("Should respond with an error when the comment_id is non existent, with the status 404",  () => {
+      return request(app)
+        .delete("/api/comments/383883")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Comment Not Found")
+        })
+    });
+});
+
+

@@ -6,6 +6,7 @@ const {
   selectCommentByArticleId,
   addedCommentForGivenArticle,
   patchedArticleVotesById,
+  deleteCommentByGivenId,
 } = require("../be-nc-news/model");
 
 exports.getEndPoints = (req, res, next) => {
@@ -67,7 +68,7 @@ exports.postedCommentForGivenArticle = (req, res, next) => {
 exports.patchedArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
-  if (typeof inc_votes !== "number" || !inc_votes) {
+  if (typeof inc_votes !== "number") {
     res
       .status(400)
       .send({ msg: "Bad Request >>> inc_votes has to be a number" });
@@ -77,5 +78,15 @@ exports.patchedArticleVotes = (req, res, next) => {
     .then((article) => {
       res.status(200).send({ article });
     })
+    .catch(next);
+};
+
+
+////// 9_DELETE /api/comments/:comment_id
+exports.deleteCommentByCommentId = (req, res, next) => {
+  const { comment_id } = req.params;
+  deleteCommentByGivenId(comment_id).then(() => {
+    res.status(204).send()
+  })
     .catch(next);
 };
