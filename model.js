@@ -70,3 +70,33 @@ exports.selectArticles = () => {
     })
     .then(({ rows }) => rows);
 };
+
+////// 7_POST /api/articles/:article_id/comments
+exports.addedCommentForGivenArticle = (article_id, username, body) => {
+  return db
+ .query('SELECT * FROM articles WHERE article_id = $1;', [article_id])
+ .then(({ rows }) => {
+   if (rows.length === 0) {
+     return Promise.reject({
+       status: 404,
+       msg: "Article Not Found"
+     });
+   }
+   return db.query('SELECT * FROM users WHERE username = $1;', [username]);
+ })
+ .then(({ rows }) => {
+   if (rows.length === 0) {
+     return Promise.reject({
+       status: 404,
+       msg: "User Not Found"
+     });
+   }
+   return db.query(
+     `INSERT INTO comments (body, article_id, author, votes)
+      VALUES ($1, $2, $3, 0)
+      RETURNING *;`,
+     [body, article_id, username]
+   );
+ })
+ .then(({ rows }) => rows[0])
+};
