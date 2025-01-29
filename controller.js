@@ -7,6 +7,7 @@ const {
   addedCommentForGivenArticle,
   patchedArticleVotesById,
   deleteCommentByGivenId,
+  getUsersFromDatabase,
 } = require("../be-nc-news/model");
 
 exports.getEndPoints = (req, res, next) => {
@@ -90,3 +91,13 @@ exports.deleteCommentByCommentId = (req, res, next) => {
   })
     .catch(next);
 };
+
+
+////// 10_GET_/api/users
+exports.getUsersF = (req, res, next) => {
+    getUsersFromDatabase()
+    .then((users) => {
+        res.status(200).send({ users });
+    })
+    .catch(next);
+}

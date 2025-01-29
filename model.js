@@ -130,3 +130,12 @@ exports.deleteCommentByGivenId = (comment_id)=>{
         return rows[0]
     });
 };
+
+////// 10_GET_/api/users
+exports.getUsersFromDatabase = ()=> {
+    return db
+    .query(`SELECT username, name, avatar_url FROM users;`)
+    .then(({ rows })=>{
+        return rows
+});
+};

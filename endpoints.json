@@ -103,6 +103,19 @@
     "description": "It deletes a comment by comment_id",
     "queries": [],
     "exampleResponse": {}
+  },
+  "GET /api/users": {
+    "description": "Serves an array of abjects and is giving us all the users",
+    "queries": [],
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "butter_bridge",
+          "name": "jonny",
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+        }
+      ]
+    }
   }
 }
 

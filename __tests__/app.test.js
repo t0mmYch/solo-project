@@ -271,8 +271,8 @@ describe("app", () => {
 ////// 8_PATCH /api/articles/:article_id
 describe("PATCH /api/articles/:article_id", () => {
   test("Should update the article's votes and return the updated article votes with a status 200", () => {
-    const updatedVote = { inc_votes: 1 }
-    let existingVotes = null
+    const updatedVote = { inc_votes: 1 };
+    let existingVotes = null;
     return request(app)
       .get("/api/articles/1")
       .then(({ body }) => {
@@ -298,7 +298,7 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 
   test("Should respond with an error when article_id is invalid, with a status of 400 ", () => {
-    const updatedVote = { inc_votes: 1 }
+    const updatedVote = { inc_votes: 1 };
     return request(app)
       .patch("/api/articles/invalid_id")
       .send(updatedVote)
@@ -319,7 +319,7 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 
   test("Should respond with an error when the value of inc_votes is not valid ", () => {
-    const notValidVote = { inc_votes: "Invalid Not A Number" }
+    const notValidVote = { inc_votes: "Invalid Not A Number" };
     return request(app)
       .patch("/api/articles/1")
       .send(notValidVote)
@@ -330,7 +330,7 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 
   test("Should respond with an error when article_id does not exist", () => {
-    const updatedVote = { inc_votes: 1 }
+    const updatedVote = { inc_votes: 1 };
     return request(app)
       .patch("/api/articles/828")
       .send(updatedVote)
@@ -341,48 +341,77 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
-    
-
-  ////// 9_DELETE /api/comments/:comment_id
-  describe("DELETE /api/comments/:comment_id", () => {
-    test("Should delete the given comment by comment_id and returns no content, with a status of 204", () => {
-      return request(app)
+////// 9_DELETE /api/comments/:comment_id
+describe("DELETE /api/comments/:comment_id", () => {
+  test("Should delete the given comment by comment_id and returns no content, with a status of 204", () => {
+    return request(app)
       .delete("/api/comments/1")
       .send()
       .expect(204)
       .then(({ body }) => {
         console.log(body);
-        
-        expect(body).toEqual({})
-        return request(app)
-          .get("/api/articles/5/comments")
-          .expect(200)
+
+        expect(body).toEqual({});
+        return request(app).get("/api/articles/5/comments").expect(200);
       })
+      .then(({ body }) => {
+        const deletedComm = body.comments.forEach((comment) => {
+          comment.comment_id === 1;
+        });
+        expect(deletedComm).toBe(); //or toBeUndefined()
+      });
+  });
+
+  test("Should respond with an error when the comment_id is not valid, with the status 400", () => {
+    return request(app)
+      .delete("/api/comments/not-valid")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+
+  test("Should respond with an error when the comment_id is non existent, with the status 404", () => {
+    return request(app)
+      .delete("/api/comments/383883")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Comment Not Found");
+      });
+  });
+
+  ////// 10_GET_/api/users
+  describe("GET /api/users", () => {
+    test("Should respond with an array of all users", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
         .then(({ body }) => {
-          const deletedComm = body.comments.forEach((comment)=>{
-            comment.comment_id === 1
-          })
-          expect(deletedComm).toBe() //or toBeUndefined()
-      })
+          expect(Array.isArray(body.users)).toBe(true)
+          expect(body.users.length).toBeGreaterThan(0)
+          body.users.forEach((user) => {
+            expect(user).toMatchObject({
+              username: expect.any(String),
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            });
+          });
+        });
     });
 
-    test("Should respond with an error when the comment_id is not valid, with the status 400", () => {
+    test("Should return a status 200 when the users have the correct properties", () => {
       return request(app)
-        .delete("/api/comments/not-valid")
-        .expect(400)
+        .get("/api/users")
+        .expect(200)
         .then(({ body }) => {
-          expect(body.msg).toBe("Bad Request")
-        })
-    });
-
-    test("Should respond with an error when the comment_id is non existent, with the status 404",  () => {
-      return request(app)
-        .delete("/api/comments/383883")
-        .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).toBe("Comment Not Found")
-        })
+         const testingUser = body.users[0]
+         console.log(body.users);
+         
+          expect(testingUser).toHaveProperty("username")
+          expect(testingUser).toHaveProperty("name")
+          expect(testingUser).toHaveProperty("avatar_url")
+          
+        });
     });
 });
-
-
+});
