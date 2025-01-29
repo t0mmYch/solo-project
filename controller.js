@@ -1,9 +1,14 @@
-const  endpoints  = require("./endpoints.json");
-const { selectTopics, selectArticleById, selectArticles, selectCommentByArticleId, addedCommentForGivenArticle} = require("../be-nc-news/model");
+const endpoints = require("./endpoints.json");
+const {
+  selectTopics,
+  selectArticleById,
+  selectArticles,
+  selectCommentByArticleId,
+  addedCommentForGivenArticle,
+  patchedArticleVotesById,
+} = require("../be-nc-news/model");
 
 exports.getEndPoints = (req, res, next) => {
-  //  console.log(endpoints);
-    
   res.status(200).send({ endpoints });
 };
 
@@ -13,9 +18,9 @@ exports.getTopics = (req, res, next) => {
       res.status(200).send({ topics });
     })
     .catch((err) => {
-        next(err)
-});
-}
+      next(err);
+    });
+};
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
@@ -23,39 +28,54 @@ exports.getArticleById = (req, res, next) => {
     .then((article) => {
       res.status(200).send({ article });
     })
-    .catch(next)
+    .catch(next);
 };
-
-
 
 exports.getArticles = (req, res, next) => {
   selectArticles()
-    .then((articles) =>{
+    .then((articles) => {
       res.status(200).send({ articles });
     })
-    .catch(next)
+    .catch(next);
 };
 
 exports.getCommentForGivenArticle = (req, res, next) => {
-    const { article_id } = req.params
-    selectCommentByArticleId(article_id)
-    .then((comments)=>{
-        res.status(200).send({ comments });
+  const { article_id } = req.params;
+  selectCommentByArticleId(article_id)
+    .then((comments) => {
+      res.status(200).send({ comments });
     })
-    .catch(next)
-}
+    .catch(next);
+};
 
 ////// 7_POST /api/articles/:article_id/comments
 exports.postedCommentForGivenArticle = (req, res, next) => {
-    const { username, body } = req.body
-    const { article_id } = req.params
-    if (!username || !body){
-      res.status(400).send({ msg: "Bad Request" })
-      return
-    }
-    addedCommentForGivenArticle(article_id, username, body)
-      .then((comment)=>{
-     res.status(200).send({ comment })
-      })
-   .catch(next)
-  };
+  const { username, body } = req.body;
+  const { article_id } = req.params;
+  if (!username || !body) {
+    res.status(400).send({ msg: "Bad Request" });
+    return;
+  }
+  addedCommentForGivenArticle(article_id, username, body)
+    .then((comment) => {
+      res.status(200).send({ comment });
+    })
+    .catch(next);
+};
+
+////// 8_PATCH /api/articles/:article_id
+exports.patchedArticleVotes = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+  if (typeof inc_votes !== "number" || !inc_votes) {
+    res
+      .status(400)
+      .send({ msg: "Bad Request >>> inc_votes has to be a number" });
+    return;
+  }
+  patchedArticleVotesById(article_id, inc_votes)
+    .then((article) => {
+      res.status(200).send({ article });
+    })
+    .catch(next);
+};
