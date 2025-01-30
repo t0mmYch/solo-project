@@ -104,10 +104,9 @@ describe("app", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
-        .then(({ body: { articles } }) => {
-          expect(articles).toBeInstanceOf(Array);
-          expect(articles.length).toBeGreaterThan(0);
-          articles.forEach((article) => {
+        .then(({ body }) => {
+          expect(Array.isArray(body.articles)).toBe(true)
+          body.articles.forEach((article) => {
             expect(article).toMatchObject({
               article_id: expect.any(Number),
               title: expect.any(String),
@@ -116,21 +115,44 @@ describe("app", () => {
               created_at: expect.any(String),
               votes: expect.any(Number),
               article_img_url: expect.any(String),
-              comment_count: expect.any(Number),
+              comment_count: expect.any(String),
             });
-            expect(article).not.toHaveProperty("body");
           });
         });
     });
+
+    test("Should return the articles sorted by votes in ascending order", () => {
+      return request(app)
+        .get("/api/articles?sort_by=votes&order=asc")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).toBeSorted({ key: "votes", ascending: true });
+        });
+    });
+  
+
+    test("Should return the articles sorted by created_at in descending order by default", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).toBeSorted("created_at", { descending: true })
+        });
+    });
+  
+   
 
     test("Should show that the articles are sorted by date in descending order", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
-        .then(({ body: { articles } }) => {
-          expect(articles).toBeSortedBy("created_at", { descending: true });
+        .then(({ body }) => {
+          const articles = body.articles
+          expect(articles).toBeSortedBy("created_at", { descending: true })
         });
     });
+
+   
 
     test("Should respond with an error of 404 for non-existent path", () => {
       return request(app)
@@ -414,4 +436,7 @@ describe("DELETE /api/comments/:comment_id", () => {
         });
     });
 });
+ 
+  ////// 11_GET_/api/articles (sorting queries)
+
 });

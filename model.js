@@ -30,19 +30,55 @@ exports.selectArticleById = (article_id) => {
       return rows[0];
     });
 };
+// tweaked for Task 11
+exports.selectArticles = (sort_by = "created_at", order = "DESC") => {
+  const validProperties = [
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "created_at",
+    "votes",
+    "comment_count",
+  ];
+  const correctOrder = ["ASC", "DESC"]
+  const upperCaseOrder = order.toUpperCase()
 
-exports.selectArticles = () => {
-  return db
-    .query(
-      `SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, article_img_url,
-        COUNT(comments.comment_id)
-        ::INT AS comment_count
-        FROM articles
-        LEFT JOIN comments ON articles.article_id = comments.article_id
-        GROUP BY articles.article_id ORDER BY articles.created_at DESC;`
-    )
-    .then(({ rows }) => rows);
+  if (!validProperties.includes(sort_by)) {
+    return Promise.reject({
+      status: 400,
+      msg: "Invalid sort_by Query",
+    });
+  }
+  if (!correctOrder.includes(upperCaseOrder)) {
+    return Promise.reject({
+      status: 400,
+      msg: "Invalid order Query",
+    });
+  }
+
+  const queryStr = `
+      SELECT 
+        articles.article_id,
+        articles.title,
+        articles.topic,
+        articles.author,
+        articles.created_at,
+        articles.votes,
+        articles.article_img_url,
+        CAST(COUNT(comments.comment_id) AS VARCHAR) AS comment_count
+      FROM 
+        articles
+      LEFT JOIN 
+        comments ON articles.article_id = comments.article_id
+      GROUP BY 
+        articles.article_id
+      ORDER BY 
+        ${sort_by} ${upperCaseOrder};
+    `;
+  return db.query(queryStr).then(({ rows }) => rows)
 };
+
 
 exports.selectCommentByArticleId = (article_id) => {
   return db
@@ -114,28 +150,28 @@ exports.patchedArticleVotesById = (article_id, inc_votes) => {
     });
 };
 
-
 ////// 9_DELETE /api/comments/:comment_id
-exports.deleteCommentByGivenId = (comment_id)=>{
-    return db
-    .query(`DELETE FROM comments WHERE comment_id  = $1 RETURNING *`, [comment_id]
-    )
-    .then(({ rows })=>{
-        if (rows.length === 0){
-            return Promise.reject({
-                status: 404,
-                msg: "Comment Not Found"
-            });
-        }
-        return rows[0]
+exports.deleteCommentByGivenId = (comment_id) => {
+  return db
+    .query(`DELETE FROM comments WHERE comment_id  = $1 RETURNING *`, [
+      comment_id,
+    ])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "Comment Not Found",
+        });
+      }
+      return rows[0];
     });
 };
 
 ////// 10_GET_/api/users
-exports.getUsersFromDatabase = ()=> {
-    return db
+exports.getUsersFromDatabase = () => {
+  return db
     .query(`SELECT username, name, avatar_url FROM users;`)
-    .then(({ rows })=>{
-        return rows
-});
+    .then(({ rows }) => {
+      return rows;
+    });
 };
