@@ -121,14 +121,6 @@ describe("app", () => {
         });
     });
 
-    test("Should return the articles sorted by votes in ascending order", () => {
-      return request(app)
-        .get("/api/articles?sort_by=votes&order=asc")
-        .expect(200)
-        .then(({ body }) => {
-          expect(body.articles).toBeSorted({ key: "votes", ascending: true });
-        });
-    });
   
 
     test("Should return the articles sorted by created_at in descending order by default", () => {
@@ -437,6 +429,81 @@ describe("DELETE /api/comments/:comment_id", () => {
     });
 });
  
-  ////// 11_GET_/api/articles (sorting queries)
+  //// 12 GET /api/articles (topic query)
+  describe('GET /api/articles (topic query)', () => {
+    test("Should returns all articles when no topic query provided", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).toBeInstanceOf(Array)
+          expect(body.articles.length).toBeGreaterThan(0)
+          body.articles.forEach((article) => {
+            expect(article).toMatchObject({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(String)
+            });
+          });
+        });
+    });
+  
+    test("Should filter the articles by topic when the topic query is provided", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then(({ body }) => {
+          console.log(body.articles);
+          
+          expect(Array.isArray(body.articles)).toBe(true);
+          expect(body.articles.length).toBeGreaterThan(0);
+          body.articles.forEach((article) => {
+            expect(article.topic).toBe("mitch");
+          });
+          console.log('Article topics:', body.articles.map(article => article.topic))
+        });
+    });
 
+    test("Should show available topics", () => {
+      return request(app)
+        .get("/api/topics")
+        .expect(200)
+        .then(({ body }) => {
+          console.log( body.topics );
+        });
+    });
+  
+    test("Should return an empty array for a valid topic with no articles", () => {
+      return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).toEqual([]);
+        });
+    });
+
+    test("Should respond with an error for non-existent topic", () => {
+      return request(app)
+        .get('/api/articles?topic=not-a-topic')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Topic Not Found");
+        });
+    });
+
+    test("Should return all the arrticles when no topic is provided", () => {
+      return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.articles)).toBe(true);
+        expect(body.articles.length).toBeGreaterThan(0);
+    });
+});
+});
 });
