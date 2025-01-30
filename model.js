@@ -30,54 +30,55 @@ exports.selectArticleById = (article_id) => {
       return rows[0];
     });
 };
-// tweaked for Task 11
-exports.selectArticles = (sort_by = "created_at", order = "DESC") => {
-  const validProperties = [
-    "article_id",
-    "title",
-    "topic",
-    "author",
-    "created_at",
-    "votes",
-    "comment_count",
-  ];
-  const correctOrder = ["ASC", "DESC"]
-  const upperCaseOrder = order.toUpperCase()
+// tweaked for Task 11 and 12
+exports.selectArticles = (sort_by = "created_at", order = "DESC", topic) => {
+    let queryStr = `
+    SELECT 
+      articles.article_id,
+      articles.title,
+      articles.topic,
+      articles.author,
+      articles.created_at,
+      articles.votes,
+      articles.article_img_url,
+      CAST(COUNT(comments.comment_id) AS VARCHAR) AS comment_count
+    FROM 
+      articles
+    LEFT JOIN 
+      comments ON articles.article_id = comments.article_id `;
 
-  if (!validProperties.includes(sort_by)) {
-    return Promise.reject({
-      status: 400,
-      msg: "Invalid sort_by Query",
-    });
-  }
-  if (!correctOrder.includes(upperCaseOrder)) {
-    return Promise.reject({
-      status: 400,
-      msg: "Invalid order Query",
-    });
-  }
+  const queryParams = [];
 
-  const queryStr = `
-      SELECT 
-        articles.article_id,
-        articles.title,
-        articles.topic,
-        articles.author,
-        articles.created_at,
-        articles.votes,
-        articles.article_img_url,
-        CAST(COUNT(comments.comment_id) AS VARCHAR) AS comment_count
-      FROM 
-        articles
-      LEFT JOIN 
-        comments ON articles.article_id = comments.article_id
-      GROUP BY 
-        articles.article_id
-      ORDER BY 
-        ${sort_by} ${upperCaseOrder};
-    `;
-  return db.query(queryStr).then(({ rows }) => rows)
+  if (topic) {
+    return db
+      .query('SELECT slug FROM topics WHERE slug = $1', [topic])
+      .then(({ rows: topicRows }) => {
+        if (topicRows.length === 0) {
+          return Promise.reject({
+            status: 404,
+            msg: "Topic Not Found"
+          });
+        }
+        queryStr += ` WHERE articles.topic = $1`;
+        queryParams.push(topic);
+        
+        queryStr += `
+          GROUP BY 
+            articles.article_id
+          ORDER BY 
+            created_at DESC;
+        `;
+
+        return db.query(queryStr, queryParams);
+      })
+      .then(({ rows }) => rows);
+  }
+  queryStr += ` GROUP BY articles.article_id ORDER BY 
+      created_at DESC; `;
+
+  return db.query(queryStr).then(({ rows }) => rows);
 };
+
 
 
 exports.selectCommentByArticleId = (article_id) => {
@@ -175,3 +176,4 @@ exports.getUsersFromDatabase = () => {
       return rows;
     });
 };
+

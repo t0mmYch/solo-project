@@ -8,6 +8,7 @@ const {
   patchedArticleVotesById,
   deleteCommentByGivenId,
   getUsersFromDatabase,
+  articlesByTopic,
 } = require("../be-nc-news/model");
 
 exports.getEndPoints = (req, res, next) => {
@@ -34,8 +35,8 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-    const { sort_by, order } = req.query
-  selectArticles(sort_by, order)
+  const { sort_by, order, topic } = req.query;
+  selectArticles(sort_by, order, topic)
     .then((articles) => {
       res.status(200).send({ articles });
     })
@@ -83,24 +84,21 @@ exports.patchedArticleVotes = (req, res, next) => {
     .catch(next);
 };
 
-
 ////// 9_DELETE /api/comments/:comment_id
 exports.deleteCommentByCommentId = (req, res, next) => {
   const { comment_id } = req.params;
-  deleteCommentByGivenId(comment_id).then(() => {
-    res.status(204).send()
-  })
+  deleteCommentByGivenId(comment_id)
+    .then(() => {
+      res.status(204).send();
+    })
     .catch(next);
 };
 
-
 ////// 10_GET_/api/users
 exports.getUsersF = (req, res, next) => {
-    getUsersFromDatabase()
+  getUsersFromDatabase()
     .then((users) => {
-        res.status(200).send({ users });
+      res.status(200).send({ users });
     })
     .catch(next);
-}
-
-////// 11_GET_/api/articles (sorting queries)
+};
