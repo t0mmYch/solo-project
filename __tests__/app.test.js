@@ -24,7 +24,6 @@ describe("app", () => {
       .get("/api/banana")
       .expect(404)
       .then((response) => {
-        console.log(response);
         expect(response.body.msg).toBe("Path Not Found");
       });
   });
@@ -58,7 +57,7 @@ describe("app", () => {
     });
   });
 
-  // /api/banana
+  
   describe("GET /api/articles/:articles_id", () => {
     test("Should respond with the status 200 and an article of objects, which should have the right properties", () => {
       return request(app)
@@ -97,7 +96,49 @@ describe("app", () => {
           expect(msg).toBe("Article Not Found");
         });
     });
+ /// 13
+    test("Should return an article with comment_count of 0 when article has no comments", () => {
+      return request(app)
+        .get("/api/articles/4") 
+        .expect(200)
+        .then(({ body }) => {
+          const { article } = body;
+          expect(article.comment_count).toBe(0);
+        });
+    });
+
+    test("Should return the correct comment_count for article with comments", () => {
+      return request(app)
+        .get("/api/articles/1")  
+        .expect(200)
+        .then(({ body }) => {
+          const { article } = body;
+          expect(article.comment_count).toBe(11); 
+          expect(typeof article.comment_count).toBe("number");
+        });
+    });
+
+    test("Should respond with the status 400 when article_id is not a number", () => {
+      return request(app)
+        .get("/api/articles/banana")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+
+    test("Should respond with status 400 when article_id is invalid format", () => {
+      return request(app)
+        .get("/api/articles/12.99")  
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+
   });
+
+
 
   describe("GET /api/articles", () => {
     test("200: responds with an array of articles", () => {
@@ -363,8 +404,6 @@ describe("DELETE /api/comments/:comment_id", () => {
       .send()
       .expect(204)
       .then(({ body }) => {
-        console.log(body);
-
         expect(body).toEqual({});
         return request(app).get("/api/articles/5/comments").expect(200);
       })
@@ -372,7 +411,7 @@ describe("DELETE /api/comments/:comment_id", () => {
         const deletedComm = body.comments.forEach((comment) => {
           comment.comment_id === 1;
         });
-        expect(deletedComm).toBe(); //or toBeUndefined()
+        expect(deletedComm).toBe();
       });
   });
 
@@ -419,8 +458,6 @@ describe("DELETE /api/comments/:comment_id", () => {
         .expect(200)
         .then(({ body }) => {
          const testingUser = body.users[0]
-         console.log(body.users);
-         
           expect(testingUser).toHaveProperty("username")
           expect(testingUser).toHaveProperty("name")
           expect(testingUser).toHaveProperty("avatar_url")
@@ -458,14 +495,11 @@ describe("DELETE /api/comments/:comment_id", () => {
         .get("/api/articles?topic=mitch")
         .expect(200)
         .then(({ body }) => {
-          console.log(body.articles);
-          
           expect(Array.isArray(body.articles)).toBe(true);
           expect(body.articles.length).toBeGreaterThan(0);
           body.articles.forEach((article) => {
             expect(article.topic).toBe("mitch");
           });
-          console.log('Article topics:', body.articles.map(article => article.topic))
         });
     });
 
