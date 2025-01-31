@@ -1,7 +1,7 @@
 const endpointsJson = require("../endpoints.json");
 const app = require("../app");
-const db = require("../../be-nc-news/db/connection");
-const seed = require("../../be-nc-news/db/seeds/seed");
+const db = require("../db/connection");
+const seed = require("../db/seeds/seed");
 const request = require("supertest");
 const testData = require("../db/data/test-data");
 require("jest-sorted");

@@ -1,4 +1,4 @@
-const db = require("../be-nc-news/db/connection");
+const db = require("./db/connection");
 
 exports.selectTopics = () => {
   return db.query(`SELECT slug, description FROM topics;`).then(({ rows }) => {
@@ -13,11 +13,12 @@ exports.selectTopics = () => {
 };
 
 exports.selectArticleById = (article_id) => {
-    if (!Number(article_id)){
-        return Promise.reject({ status: 400, msg: "Bad Request" });
-      }
-      return db.query(
-        ` SELECT articles.article_id, 
+  if (!Number(article_id)) {
+    return Promise.reject({ status: 400, msg: "Bad Request" });
+  }
+  return db
+    .query(
+      ` SELECT articles.article_id, 
         articles.title, 
         articles.topic, 
         articles.author, 
@@ -31,22 +32,21 @@ exports.selectArticleById = (article_id) => {
         WHERE articles.article_id = $1
         GROUP BY articles.article_id;
         `,
-        [article_id]
-      )
-      .then(({ rows }) =>{
-        if (rows.length === 0){
-          return Promise.reject({
-            status: 404,
-            msg: "Article Not Found",
-          });
-        }
-        return rows[0];
-      });
-    };
-   
+      [article_id]
+    )
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "Article Not Found",
+        });
+      }
+      return rows[0];
+    });
+};
 
 exports.selectArticles = (sort_by = "created_at", order = "DESC", topic) => {
-    let queryStr = `
+  let queryStr = `
     SELECT 
       articles.article_id,
       articles.title,
@@ -65,17 +65,17 @@ exports.selectArticles = (sort_by = "created_at", order = "DESC", topic) => {
 
   if (topic) {
     return db
-      .query('SELECT slug FROM topics WHERE slug = $1', [topic])
+      .query("SELECT slug FROM topics WHERE slug = $1", [topic])
       .then(({ rows: topicRows }) => {
         if (topicRows.length === 0) {
           return Promise.reject({
             status: 404,
-            msg: "Topic Not Found"
+            msg: "Topic Not Found",
           });
         }
         queryStr += ` WHERE articles.topic = $1`;
         queryParams.push(topic);
-        
+
         queryStr += `
           GROUP BY 
             articles.article_id
@@ -92,8 +92,6 @@ exports.selectArticles = (sort_by = "created_at", order = "DESC", topic) => {
 
   return db.query(queryStr).then(({ rows }) => rows);
 };
-
-
 
 exports.selectCommentByArticleId = (article_id) => {
   return db
@@ -190,4 +188,3 @@ exports.getUsersFromDatabase = () => {
       return rows;
     });
 };
-
