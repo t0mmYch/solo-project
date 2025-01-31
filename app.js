@@ -1,4 +1,5 @@
 const express = require("express");
+const apiRouter = require("./routers/api.router");
 const app = express();
 const endpoints = require("./endpoints.json");
 const {
@@ -24,12 +25,6 @@ app.post("/api/articles/:article_id/comments", postedCommentForGivenArticle);
 app.patch("/api/articles/:article_id", patchedArticleVotes);
 app.delete("/api/comments/:comment_id", deleteCommentByCommentId);
 app.get("/api/users", getUsersF);
-
-
-
-
-
-
 
 app.all("*", (req, res) => {
   res.status(404).send({ msg: "Path Not Found" });

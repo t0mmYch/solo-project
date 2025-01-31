@@ -363,7 +363,7 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
 
-  test("Should respond with an erro when inc_votes is missing, with a status of 400", () => {
+  test("Should respond with an error when inc_votes is missing, with a status of 400", () => {
     return request(app)
       .patch("/api/articles/1")
       .send({})
