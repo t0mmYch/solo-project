@@ -9,7 +9,7 @@ const {
   deleteCommentByGivenId,
   getUsersFromDatabase,
   articlesByTopic,
-} = require("../be-nc-news/model");
+} = require("./model");
 
 exports.getEndPoints = (req, res, next) => {
   res.status(200).send({ endpoints });
